@@ -26,6 +26,16 @@
             >Dashboard</a
           >
           <a
+            class="btn btn-outline-primary btn-sm"
+            href="{{ url_for('main.quote_list') }}"
+            >Quotes</a
+          >
+          <a
+            class="btn btn-primary btn-sm"
+            href="{{ url_for('main.quote_create') }}"
+            >New quote</a
+          >
+          <a
             class="btn btn-outline-secondary btn-sm"
             href="{{ url_for('auth.logout') }}"
             >Logout</a

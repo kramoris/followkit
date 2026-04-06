@@ -1,17 +1,61 @@
 {% extends "base.html" %} {% block title %}Dashboard - FollowKit{% endblock %}
 {% block content %}
-<div class="mb-4">
-  <h1 class="h3">Dashboard</h1>
-  <p class="text-muted mb-0">Welcome back, {{ current_user.name }}.</p>
+<div class="d-flex justify-content-between align-items-center mb-4">
+  <div>
+    <h1 class="h3 mb-1">Dashboard</h1>
+    <p class="text-muted mb-0">Welcome back, {{ current_user.name }}.</p>
+  </div>
+  <a href="{{ url_for('main.quote_create') }}" class="btn btn-primary"
+    >New quote</a
+  >
+</div>
+
+<div class="card mb-4">
+  <div class="card-body">
+    <h2 class="h5">Quote overview</h2>
+    <p class="mb-0">
+      Track recent quotes and keep follow-ups organized.
+    </p>
+  </div>
 </div>
 
 <div class="card">
   <div class="card-body">
-    <h2 class="h5">MVP status</h2>
-    <p class="mb-0">
-      Authentication is working. Next we will add quote creation, quote list,
-      and follow-up tracking.
-    </p>
+    <div class="d-flex justify-content-between align-items-center mb-3">
+      <h2 class="h5 mb-0">Recent quotes</h2>
+      <a
+        href="{{ url_for('main.quote_list') }}"
+        class="btn btn-outline-secondary btn-sm"
+        >View all</a
+      >
+    </div>
+
+    {% if recent_quotes %}
+    <div class="table-responsive">
+      <table class="table table-sm align-middle mb-0">
+        <thead>
+          <tr>
+            <th>Customer</th>
+            <th>Status</th>
+            <th>Amount</th>
+            <th>Date sent</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for quote in recent_quotes %}
+          <tr>
+            <td>{{ quote.customer_name }}</td>
+            <td>{{ quote.status.replace('_', ' ').title() }}</td>
+            <td>{{ quote.quote_amount }}</td>
+            <td>{{ quote.date_sent or "-" }}</td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+    {% else %}
+    <p class="text-muted mb-0">No quotes yet.</p>
+    {% endif %}
   </div>
 </div>
 {% endblock %}
