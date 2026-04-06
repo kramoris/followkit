@@ -1,4 +1,4 @@
-from datetime import datetime
+from datetime import date
 
 from flask import Blueprint, redirect, render_template, url_for, flash
 from flask_login import current_user, login_required
@@ -20,14 +20,65 @@ def index():
 @main.route("/dashboard")
 @login_required
 def dashboard():
-    recent_quotes = (
+    quotes = (
         Quote.query
         .filter_by(user_id=current_user.id)
         .order_by(Quote.created_at.desc())
-        .limit(5)
         .all()
     )
-    return render_template("dashboard.html", recent_quotes=recent_quotes)
+
+    today = date.today()
+
+    active_follow_up_statuses = {
+        Quote.STATUS_SENT,
+        Quote.STATUS_FOLLOW_UP_DUE,
+        Quote.STATUS_NO_RESPONSE,
+    }
+
+    open_quote_statuses = {
+        Quote.STATUS_SENT,
+        Quote.STATUS_FOLLOW_UP_DUE,
+        Quote.STATUS_NO_RESPONSE,
+    }
+
+    recent_quotes = quotes[:5]
+
+    due_today_quotes = [
+        quote for quote in quotes
+        if quote.next_follow_up_date == today and quote.status in active_follow_up_statuses
+    ]
+
+    overdue_quotes = [
+        quote for quote in quotes
+        if quote.next_follow_up_date
+        and quote.next_follow_up_date < today
+        and quote.status in active_follow_up_statuses
+    ]
+
+    status_counts = {
+        "draft": sum(1 for quote in quotes if quote.status == Quote.STATUS_DRAFT),
+        "sent": sum(1 for quote in quotes if quote.status == Quote.STATUS_SENT),
+        "follow_up_due": sum(1 for quote in quotes if quote.status == Quote.STATUS_FOLLOW_UP_DUE),
+        "won": sum(1 for quote in quotes if quote.status == Quote.STATUS_WON),
+        "lost": sum(1 for quote in quotes if quote.status == Quote.STATUS_LOST),
+        "no_response": sum(1 for quote in quotes if quote.status == Quote.STATUS_NO_RESPONSE),
+    }
+
+    total_quotes = len(quotes)
+
+    open_quote_value = sum(
+        quote.quote_amount for quote in quotes if quote.status in open_quote_statuses
+    )
+
+    return render_template(
+        "dashboard.html",
+        recent_quotes=recent_quotes,
+        due_today_quotes=due_today_quotes,
+        overdue_quotes=overdue_quotes,
+        status_counts=status_counts,
+        total_quotes=total_quotes,
+        open_quote_value=open_quote_value,
+    )
 
 
 @main.route("/quotes")
@@ -103,6 +154,8 @@ def quote_follow_up(quote_id):
     follow_up_form = QuoteFollowUpForm()
 
     if follow_up_form.validate_on_submit():
+        from datetime import datetime
+
         quote.status = follow_up_form.status.data
         quote.next_follow_up_date = follow_up_form.next_follow_up_date.data
         quote.last_followed_up_at = datetime.utcnow()

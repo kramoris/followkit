@@ -10,57 +10,213 @@
   >
 </div>
 
-<div class="card mb-4">
-  <div class="card-body">
-    <h2 class="h5">Quote overview</h2>
-    <p class="mb-0">Track recent quotes and keep follow-ups organized.</p>
+<div class="row g-3 mb-4">
+  <div class="col-md-6 col-xl-3">
+    <div class="card h-100">
+      <div class="card-body">
+        <div class="text-muted small mb-1">Follow-ups due today</div>
+        <div class="fs-3 fw-semibold">{{ due_today_quotes|length }}</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="col-md-6 col-xl-3">
+    <div class="card h-100">
+      <div class="card-body">
+        <div class="text-muted small mb-1">Overdue follow-ups</div>
+        <div class="fs-3 fw-semibold">{{ overdue_quotes|length }}</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="col-md-6 col-xl-3">
+    <div class="card h-100">
+      <div class="card-body">
+        <div class="text-muted small mb-1">Total quotes</div>
+        <div class="fs-3 fw-semibold">{{ total_quotes }}</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="col-md-6 col-xl-3">
+    <div class="card h-100">
+      <div class="card-body">
+        <div class="text-muted small mb-1">Open quote value</div>
+        <div class="fs-3 fw-semibold">{{ open_quote_value }}</div>
+      </div>
+    </div>
   </div>
 </div>
 
-<div class="card">
-  <div class="card-body">
-    <div class="d-flex justify-content-between align-items-center mb-3">
-      <h2 class="h5 mb-0">Recent quotes</h2>
-      <a
-        href="{{ url_for('main.quote_list') }}"
-        class="btn btn-outline-secondary btn-sm"
-        >View all</a
-      >
-    </div>
+<div class="row g-4 mb-4">
+  <div class="col-lg-6">
+    <div class="card h-100">
+      <div class="card-body">
+        <h2 class="h5 mb-3">Follow-ups due today</h2>
 
-    {% if recent_quotes %}
-    <div class="table-responsive">
-      <table class="table table-sm align-middle mb-0">
-        <thead>
-          <tr>
-            <th>Customer</th>
-            <th>Status</th>
-            <th>Amount</th>
-            <th>Date sent</th>
-          </tr>
-        </thead>
-        <tbody>
-          {% for quote in recent_quotes %}
-          <tr>
-            <td>
-              <a
-                href="{{ url_for('main.quote_detail', quote_id=quote.id) }}"
-                class="text-decoration-none"
-              >
-                {{ quote.customer_name }}
-              </a>
-            </td>
-            <td>{{ quote.status.replace('_', ' ').title() }}</td>
-            <td>{{ quote.quote_amount }}</td>
-            <td>{{ quote.date_sent or "-" }}</td>
-          </tr>
-          {% endfor %}
-        </tbody>
-      </table>
+        {% if due_today_quotes %}
+        <div class="table-responsive">
+          <table class="table table-sm align-middle mb-0">
+            <thead>
+              <tr>
+                <th>Customer</th>
+                <th>Status</th>
+                <th>Amount</th>
+              </tr>
+            </thead>
+            <tbody>
+              {% for quote in due_today_quotes %}
+              <tr>
+                <td>
+                  <a
+                    href="{{ url_for('main.quote_detail', quote_id=quote.id) }}"
+                    class="text-decoration-none"
+                  >
+                    {{ quote.customer_name }}
+                  </a>
+                </td>
+                <td>{{ quote.status.replace('_', ' ').title() }}</td>
+                <td>{{ quote.quote_amount }}</td>
+              </tr>
+              {% endfor %}
+            </tbody>
+          </table>
+        </div>
+        {% else %}
+        <p class="text-muted mb-0">No follow-ups due today.</p>
+        {% endif %}
+      </div>
     </div>
-    {% else %}
-    <p class="text-muted mb-0">No quotes yet.</p>
-    {% endif %}
+  </div>
+
+  <div class="col-lg-6">
+    <div class="card h-100">
+      <div class="card-body">
+        <h2 class="h5 mb-3">Overdue follow-ups</h2>
+
+        {% if overdue_quotes %}
+        <div class="table-responsive">
+          <table class="table table-sm align-middle mb-0">
+            <thead>
+              <tr>
+                <th>Customer</th>
+                <th>Next follow-up</th>
+                <th>Amount</th>
+              </tr>
+            </thead>
+            <tbody>
+              {% for quote in overdue_quotes %}
+              <tr>
+                <td>
+                  <a
+                    href="{{ url_for('main.quote_detail', quote_id=quote.id) }}"
+                    class="text-decoration-none"
+                  >
+                    {{ quote.customer_name }}
+                  </a>
+                </td>
+                <td>{{ quote.next_follow_up_date }}</td>
+                <td>{{ quote.quote_amount }}</td>
+              </tr>
+              {% endfor %}
+            </tbody>
+          </table>
+        </div>
+        {% else %}
+        <p class="text-muted mb-0">No overdue follow-ups.</p>
+        {% endif %}
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="row g-4">
+  <div class="col-lg-5">
+    <div class="card h-100">
+      <div class="card-body">
+        <h2 class="h5 mb-3">Status breakdown</h2>
+
+        <div class="table-responsive">
+          <table class="table table-sm align-middle mb-0">
+            <tbody>
+              <tr>
+                <td>Draft</td>
+                <td class="text-end">{{ status_counts.draft }}</td>
+              </tr>
+              <tr>
+                <td>Sent</td>
+                <td class="text-end">{{ status_counts.sent }}</td>
+              </tr>
+              <tr>
+                <td>Follow-up due</td>
+                <td class="text-end">{{ status_counts.follow_up_due }}</td>
+              </tr>
+              <tr>
+                <td>Won</td>
+                <td class="text-end">{{ status_counts.won }}</td>
+              </tr>
+              <tr>
+                <td>Lost</td>
+                <td class="text-end">{{ status_counts.lost }}</td>
+              </tr>
+              <tr>
+                <td>No response</td>
+                <td class="text-end">{{ status_counts.no_response }}</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="col-lg-7">
+    <div class="card h-100">
+      <div class="card-body">
+        <div class="d-flex justify-content-between align-items-center mb-3">
+          <h2 class="h5 mb-0">Recent quotes</h2>
+          <a
+            href="{{ url_for('main.quote_list') }}"
+            class="btn btn-outline-secondary btn-sm"
+            >View all</a
+          >
+        </div>
+
+        {% if recent_quotes %}
+        <div class="table-responsive">
+          <table class="table table-sm align-middle mb-0">
+            <thead>
+              <tr>
+                <th>Customer</th>
+                <th>Status</th>
+                <th>Amount</th>
+                <th>Date sent</th>
+              </tr>
+            </thead>
+            <tbody>
+              {% for quote in recent_quotes %}
+              <tr>
+                <td>
+                  <a
+                    href="{{ url_for('main.quote_detail', quote_id=quote.id) }}"
+                    class="text-decoration-none"
+                  >
+                    {{ quote.customer_name }}
+                  </a>
+                </td>
+                <td>{{ quote.status.replace('_', ' ').title() }}</td>
+                <td>{{ quote.quote_amount }}</td>
+                <td>{{ quote.date_sent or "-" }}</td>
+              </tr>
+              {% endfor %}
+            </tbody>
+          </table>
+        </div>
+        {% else %}
+        <p class="text-muted mb-0">No quotes yet.</p>
+        {% endif %}
+      </div>
+    </div>
   </div>
 </div>
 {% endblock %}
