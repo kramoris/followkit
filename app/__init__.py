@@ -9,6 +9,12 @@ login_manager = LoginManager()
 migrate = Migrate()
 
 
+@login_manager.user_loader
+def load_user(user_id):
+    from app.models import User
+    return User.query.get(int(user_id))
+
+
 def create_app():
     app = Flask(__name__, instance_relative_config=True)
     app.config.from_object(Config)
@@ -21,6 +27,7 @@ def create_app():
 
     from app.routes import main
     from app.auth import auth
+    from app import models
 
     app.register_blueprint(main)
     app.register_blueprint(auth)
