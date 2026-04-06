@@ -57,3 +57,20 @@ class QuoteForm(FlaskForm):
     customer_email = StringField("Customer email", validators=[Optional(), Email(), Length(max=255)])
     customer_phone = StringField("Customer phone", validators=[Optional(), Length(max=50)])
     submit = SubmitField("Save quote")
+
+
+class QuoteFollowUpForm(FlaskForm):
+    status = SelectField(
+        "Status",
+        validators=[DataRequired()],
+        choices=[
+            ("sent", "Sent"),
+            ("follow_up_due", "Follow-up due"),
+            ("won", "Won"),
+            ("lost", "Lost"),
+            ("no_response", "No response"),
+        ],
+    )
+    next_follow_up_date = DateField("Next follow-up date", validators=[Optional()], format="%Y-%m-%d")
+    follow_up_note = TextAreaField("Follow-up note", validators=[Optional(), Length(max=2000)])
+    submit = SubmitField("Save follow-up")

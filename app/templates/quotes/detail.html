@@ -1,0 +1,123 @@
+{% extends "base.html" %} {% block title %}{{ quote.customer_name }} -
+FollowKit{% endblock %} {% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+  <div>
+    <h1 class="h3 mb-1">{{ quote.customer_name }}</h1>
+    <p class="text-muted mb-0">{{ quote.job_description }}</p>
+  </div>
+  <a href="{{ url_for('main.quote_list') }}" class="btn btn-outline-secondary"
+    >Back to quotes</a
+  >
+</div>
+
+<div class="row g-4">
+  <div class="col-lg-7">
+    <div class="card mb-4">
+      <div class="card-body">
+        <h2 class="h5 mb-3">Quote details</h2>
+
+        <div class="row mb-2">
+          <div class="col-sm-4 fw-semibold">Status</div>
+          <div class="col-sm-8">
+            {{ quote.status.replace('_', ' ').title() }}
+          </div>
+        </div>
+
+        <div class="row mb-2">
+          <div class="col-sm-4 fw-semibold">Amount</div>
+          <div class="col-sm-8">{{ quote.quote_amount }}</div>
+        </div>
+
+        <div class="row mb-2">
+          <div class="col-sm-4 fw-semibold">Date sent</div>
+          <div class="col-sm-8">{{ quote.date_sent or "-" }}</div>
+        </div>
+
+        <div class="row mb-2">
+          <div class="col-sm-4 fw-semibold">Next follow-up</div>
+          <div class="col-sm-8">{{ quote.next_follow_up_date or "-" }}</div>
+        </div>
+
+        <div class="row mb-2">
+          <div class="col-sm-4 fw-semibold">Contact method</div>
+          <div class="col-sm-8">
+            {{ quote.contact_method.replace('_', ' ').title() }}
+          </div>
+        </div>
+
+        <div class="row mb-2">
+          <div class="col-sm-4 fw-semibold">Customer email</div>
+          <div class="col-sm-8">{{ quote.customer_email or "-" }}</div>
+        </div>
+
+        <div class="row mb-2">
+          <div class="col-sm-4 fw-semibold">Customer phone</div>
+          <div class="col-sm-8">{{ quote.customer_phone or "-" }}</div>
+        </div>
+
+        <div class="row mb-0">
+          <div class="col-sm-4 fw-semibold">Last followed up</div>
+          <div class="col-sm-8">{{ quote.last_followed_up_at or "-" }}</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-body">
+        <h2 class="h5 mb-3">Notes</h2>
+        {% if quote.notes %}
+        <pre class="mb-0" style="white-space: pre-wrap; font-family: inherit">
+{{ quote.notes }}</pre
+        >
+        {% else %}
+        <p class="text-muted mb-0">No notes yet.</p>
+        {% endif %}
+      </div>
+    </div>
+  </div>
+
+  <div class="col-lg-5">
+    <div class="card">
+      <div class="card-body">
+        <h2 class="h5 mb-3">Log follow-up</h2>
+
+        <form
+          method="POST"
+          action="{{ url_for('main.quote_follow_up', quote_id=quote.id) }}"
+          novalidate
+        >
+          {{ follow_up_form.hidden_tag() }}
+
+          <div class="mb-3">
+            {{ follow_up_form.status.label(class="form-label") }} {{
+            follow_up_form.status(class="form-select") }} {% for error in
+            follow_up_form.status.errors %}
+            <div class="text-danger small">{{ error }}</div>
+            {% endfor %}
+          </div>
+
+          <div class="mb-3">
+            {{ follow_up_form.next_follow_up_date.label(class="form-label") }}
+            {{ follow_up_form.next_follow_up_date(class="form-control") }} {%
+            for error in follow_up_form.next_follow_up_date.errors %}
+            <div class="text-danger small">{{ error }}</div>
+            {% endfor %}
+          </div>
+
+          <div class="mb-3">
+            {{ follow_up_form.follow_up_note.label(class="form-label") }} {{
+            follow_up_form.follow_up_note(class="form-control", rows="5") }} {%
+            for error in follow_up_form.follow_up_note.errors %}
+            <div class="text-danger small">{{ error }}</div>
+            {% endfor %}
+          </div>
+
+          <div class="d-grid">
+            {{ follow_up_form.submit(class="btn btn-primary") }}
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

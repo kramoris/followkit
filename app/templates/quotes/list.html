@@ -28,7 +28,14 @@ block content %}
         <tbody>
           {% for quote in quotes %}
           <tr>
-            <td>{{ quote.customer_name }}</td>
+            <td>
+              <a
+                href="{{ url_for('main.quote_detail', quote_id=quote.id) }}"
+                class="text-decoration-none"
+              >
+                {{ quote.customer_name }}
+              </a>
+            </td>
             <td>
               {{ quote.job_description[:60] }}{% if quote.job_description|length
               > 60 %}...{% endif %}

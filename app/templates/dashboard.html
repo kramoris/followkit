@@ -13,9 +13,7 @@
 <div class="card mb-4">
   <div class="card-body">
     <h2 class="h5">Quote overview</h2>
-    <p class="mb-0">
-      Track recent quotes and keep follow-ups organized.
-    </p>
+    <p class="mb-0">Track recent quotes and keep follow-ups organized.</p>
   </div>
 </div>
 
@@ -44,7 +42,14 @@
         <tbody>
           {% for quote in recent_quotes %}
           <tr>
-            <td>{{ quote.customer_name }}</td>
+            <td>
+              <a
+                href="{{ url_for('main.quote_detail', quote_id=quote.id) }}"
+                class="text-decoration-none"
+              >
+                {{ quote.customer_name }}
+              </a>
+            </td>
             <td>{{ quote.status.replace('_', ' ').title() }}</td>
             <td>{{ quote.quote_amount }}</td>
             <td>{{ quote.date_sent or "-" }}</td>
