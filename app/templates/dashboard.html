@@ -1,0 +1,17 @@
+{% extends "base.html" %} {% block title %}Dashboard - FollowKit{% endblock %}
+{% block content %}
+<div class="mb-4">
+  <h1 class="h3">Dashboard</h1>
+  <p class="text-muted mb-0">Welcome back, {{ current_user.name }}.</p>
+</div>
+
+<div class="card">
+  <div class="card-body">
+    <h2 class="h5">MVP status</h2>
+    <p class="mb-0">
+      Authentication is working. Next we will add quote creation, quote list,
+      and follow-up tracking.
+    </p>
+  </div>
+</div>
+{% endblock %}

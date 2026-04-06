@@ -12,7 +12,7 @@ migrate = Migrate()
 @login_manager.user_loader
 def load_user(user_id):
     from app.models import User
-    return User.query.get(int(user_id))
+    return db.session.get(User, int(user_id))
 
 
 def create_app():
@@ -24,6 +24,7 @@ def create_app():
     migrate.init_app(app, db)
 
     login_manager.login_view = "auth.login"
+    login_manager.login_message_category = "warning"
 
     from app.routes import main
     from app.auth import auth
