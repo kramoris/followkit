@@ -4,8 +4,8 @@ from flask import Blueprint, flash, redirect, render_template, url_for
 from flask_login import current_user, login_required
 
 from app import db
-from app.forms import QuoteForm, QuoteFollowUpForm
-from app.models import Quote
+from app.forms import FollowUpTemplateForm, QuoteForm, QuoteFollowUpForm
+from app.models import FollowUpTemplate, Quote
 
 main = Blueprint("main", __name__)
 
@@ -208,3 +208,60 @@ def quote_follow_up(quote_id):
         flash("Please correct the errors in the follow-up form.", "danger")
 
     return redirect(url_for("main.quote_detail", quote_id=quote.id))
+
+
+@main.route("/templates")
+@login_required
+def template_list():
+    templates = (
+        FollowUpTemplate.query
+        .filter_by(user_id=current_user.id)
+        .order_by(FollowUpTemplate.name.asc())
+        .all()
+    )
+    return render_template("templates/list.html", templates=templates)
+
+
+@main.route("/templates/new", methods=["GET", "POST"])
+@login_required
+def template_create():
+    form = FollowUpTemplateForm()
+
+    if form.validate_on_submit():
+        template = FollowUpTemplate(
+            user_id=current_user.id,
+            name=form.name.data.strip(),
+            subject=form.subject.data.strip() if form.subject.data else None,
+            body=form.body.data.strip(),
+        )
+
+        db.session.add(template)
+        db.session.commit()
+
+        flash("Template created successfully.", "success")
+        return redirect(url_for("main.template_list"))
+
+    return render_template("templates/create.html", form=form)
+
+
+@main.route("/templates/<int:template_id>/edit", methods=["GET", "POST"])
+@login_required
+def template_edit(template_id):
+    template = (
+        FollowUpTemplate.query
+        .filter_by(id=template_id, user_id=current_user.id)
+        .first_or_404()
+    )
+
+    form = FollowUpTemplateForm(obj=template)
+
+    if form.validate_on_submit():
+        template.name = form.name.data.strip()
+        template.subject = form.subject.data.strip() if form.subject.data else None
+        template.body = form.body.data.strip()
+
+        db.session.commit()
+        flash("Template updated successfully.", "success")
+        return redirect(url_for("main.template_list"))
+
+    return render_template("templates/edit.html", form=form, template=template)

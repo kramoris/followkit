@@ -74,3 +74,9 @@ class QuoteFollowUpForm(FlaskForm):
     next_follow_up_date = DateField("Next follow-up date", validators=[Optional()], format="%Y-%m-%d")
     follow_up_note = TextAreaField("Follow-up note", validators=[Optional(), Length(max=2000)])
     submit = SubmitField("Save follow-up")
+
+class FollowUpTemplateForm(FlaskForm):
+    name = StringField("Template name", validators=[DataRequired(), Length(max=120)])
+    subject = StringField("Subject", validators=[Optional(), Length(max=255)])
+    body = TextAreaField("Message", validators=[DataRequired(), Length(max=5000)])
+    submit = SubmitField("Save template")
