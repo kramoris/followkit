@@ -212,7 +212,14 @@ def quote_edit(quote_id):
 def quote_follow_up(quote_id):
     quote = Quote.query.filter_by(id=quote_id, user_id=current_user.id).first_or_404()
 
+    templates = (
+        FollowUpTemplate.query.filter_by(user_id=current_user.id)
+        .order_by(FollowUpTemplate.name.asc())
+        .all()
+    )
+
     follow_up_form = QuoteFollowUpForm()
+    follow_up_form.template_id.choices = build_template_choices(templates)
 
     if follow_up_form.validate_on_submit():
         quote.status = follow_up_form.status.data
@@ -236,7 +243,7 @@ def quote_follow_up(quote_id):
         db.session.commit()
         flash("Follow-up saved.", "success")
     else:
-        flash("Please correct the errors in the follow-up form.", "danger")
+        flash(f"Form errors: {follow_up_form.errors}", "danger")  # keep this for now
 
     return redirect(url_for("main.quote_detail", quote_id=quote.id))
 

@@ -92,6 +92,7 @@ class QuoteFollowUpForm(FlaskForm):
         "Use template",
         validators=[Optional()],
         choices=[],
+        coerce=str,
     )
     status = SelectField(
         "Status",
