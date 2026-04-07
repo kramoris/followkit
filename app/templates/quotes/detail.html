@@ -96,6 +96,30 @@ FollowKit{% endblock %} {% block content %}
           {{ follow_up_form.hidden_tag() }}
 
           <div class="mb-3">
+            {{ follow_up_form.template_id.label(class="form-label") }} {{
+            follow_up_form.template_id(class="form-select",
+            id="template-select") }} {% for error in
+            follow_up_form.template_id.errors %}
+            <div class="text-danger small">{{ error }}</div>
+            {% endfor %}
+          </div>
+
+          {% if templates %}
+          <div class="mb-3">
+            <button
+              type="button"
+              class="btn btn-outline-secondary btn-sm"
+              id="apply-template-button"
+            >
+              Insert template into note
+            </button>
+            <div class="form-text">
+              The selected template will be added to the follow-up note box.
+            </div>
+          </div>
+          {% endif %}
+
+          <div class="mb-3">
             {{ follow_up_form.status.label(class="form-label") }} {{
             follow_up_form.status(class="form-select") }} {% for error in
             follow_up_form.status.errors %}
@@ -113,8 +137,9 @@ FollowKit{% endblock %} {% block content %}
 
           <div class="mb-3">
             {{ follow_up_form.follow_up_note.label(class="form-label") }} {{
-            follow_up_form.follow_up_note(class="form-control", rows="5") }} {%
-            for error in follow_up_form.follow_up_note.errors %}
+            follow_up_form.follow_up_note(class="form-control", rows="8",
+            id="follow-up-note") }} {% for error in
+            follow_up_form.follow_up_note.errors %}
             <div class="text-danger small">{{ error }}</div>
             {% endfor %}
           </div>
@@ -127,4 +152,44 @@ FollowKit{% endblock %} {% block content %}
     </div>
   </div>
 </div>
+
+<script>
+  const templates = {
+    {% for template in templates %}
+    "{{ template.id }}": {
+      subject: {{ (template.subject or "")|tojson }},
+      body: {{ template.body|tojson }}
+    },
+    {% endfor %}
+  };
+
+  const templateSelect = document.getElementById("template-select");
+  const applyTemplateButton = document.getElementById("apply-template-button");
+  const followUpNote = document.getElementById("follow-up-note");
+
+  if (templateSelect && applyTemplateButton && followUpNote) {
+    applyTemplateButton.addEventListener("click", function () {
+      const selectedId = templateSelect.value;
+
+      if (!selectedId || !templates[selectedId]) {
+        return;
+      }
+
+      const selectedTemplate = templates[selectedId];
+      let templateText = "";
+
+      if (selectedTemplate.subject) {
+        templateText += `Subject: ${selectedTemplate.subject}\n\n`;
+      }
+
+      templateText += selectedTemplate.body;
+
+      if (followUpNote.value.trim()) {
+        followUpNote.value = `${followUpNote.value.trim()}\n\n${templateText}`;
+      } else {
+        followUpNote.value = templateText;
+      }
+    });
+  }
+</script>
 {% endblock %}

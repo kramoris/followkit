@@ -1,6 +1,6 @@
 from datetime import UTC, date, datetime
 
-from flask import Blueprint, flash, redirect, render_template, url_for
+from flask import Blueprint, flash, redirect, render_template, request, url_for
 from flask_login import current_user, login_required
 
 from app import db
@@ -14,6 +14,12 @@ def utc_now():
     return datetime.now(UTC)
 
 
+def build_template_choices(templates):
+    return [("", "Select a template")] + [
+        (str(template.id), template.name) for template in templates
+    ]
+
+
 @main.route("/")
 def index():
     if current_user.is_authenticated:
@@ -25,8 +31,7 @@ def index():
 @login_required
 def dashboard():
     quotes = (
-        Quote.query
-        .filter_by(user_id=current_user.id)
+        Quote.query.filter_by(user_id=current_user.id)
         .order_by(Quote.created_at.desc())
         .all()
     )
@@ -48,12 +53,15 @@ def dashboard():
     recent_quotes = quotes[:5]
 
     due_today_quotes = [
-        quote for quote in quotes
-        if quote.next_follow_up_date == today and quote.status in active_follow_up_statuses
+        quote
+        for quote in quotes
+        if quote.next_follow_up_date == today
+        and quote.status in active_follow_up_statuses
     ]
 
     overdue_quotes = [
-        quote for quote in quotes
+        quote
+        for quote in quotes
         if quote.next_follow_up_date
         and quote.next_follow_up_date < today
         and quote.status in active_follow_up_statuses
@@ -62,13 +70,22 @@ def dashboard():
     status_counts = {
         "draft": sum(1 for quote in quotes if quote.status == Quote.STATUS_DRAFT),
         "sent": sum(1 for quote in quotes if quote.status == Quote.STATUS_SENT),
-        "follow_up_due": sum(1 for quote in quotes if quote.status == Quote.STATUS_FOLLOW_UP_DUE),
+        "follow_up_due": sum(
+            1 for quote in quotes if quote.status == Quote.STATUS_FOLLOW_UP_DUE
+        ),
         "won": sum(1 for quote in quotes if quote.status == Quote.STATUS_WON),
         "lost": sum(1 for quote in quotes if quote.status == Quote.STATUS_LOST),
-        "no_response": sum(1 for quote in quotes if quote.status == Quote.STATUS_NO_RESPONSE),
+        "no_response": sum(
+            1 for quote in quotes if quote.status == Quote.STATUS_NO_RESPONSE
+        ),
     }
 
     total_quotes = len(quotes)
+    total_won = status_counts["won"]
+    total_lost = status_counts["lost"]
+
+    decided_quotes = total_won + total_lost
+    win_rate = round((total_won / decided_quotes) * 100, 1) if decided_quotes > 0 else 0
 
     open_quote_value = sum(
         quote.quote_amount for quote in quotes if quote.status in open_quote_statuses
@@ -82,6 +99,9 @@ def dashboard():
         status_counts=status_counts,
         total_quotes=total_quotes,
         open_quote_value=open_quote_value,
+        total_won=total_won,
+        total_lost=total_lost,
+        win_rate=win_rate,
     )
 
 
@@ -89,8 +109,7 @@ def dashboard():
 @login_required
 def quote_list():
     quotes = (
-        Quote.query
-        .filter_by(user_id=current_user.id)
+        Quote.query.filter_by(user_id=current_user.id)
         .order_by(Quote.created_at.desc())
         .all()
     )
@@ -113,8 +132,12 @@ def quote_create():
             next_follow_up_date=form.next_follow_up_date.data,
             notes=form.notes.data.strip() if form.notes.data else None,
             contact_method=form.contact_method.data,
-            customer_email=form.customer_email.data.strip().lower() if form.customer_email.data else None,
-            customer_phone=form.customer_phone.data.strip() if form.customer_phone.data else None,
+            customer_email=form.customer_email.data.strip().lower()
+            if form.customer_email.data
+            else None,
+            customer_phone=form.customer_phone.data.strip()
+            if form.customer_phone.data
+            else None,
         )
 
         db.session.add(quote)
@@ -126,34 +149,36 @@ def quote_create():
     return render_template("quotes/create.html", form=form)
 
 
-@main.route("/quotes/<int:quote_id>")
+@main.route("/quotes/<int:quote_id>", methods=["GET", "POST"])
 @login_required
 def quote_detail(quote_id):
-    quote = (
-        Quote.query
-        .filter_by(id=quote_id, user_id=current_user.id)
-        .first_or_404()
+    quote = Quote.query.filter_by(id=quote_id, user_id=current_user.id).first_or_404()
+
+    templates = (
+        FollowUpTemplate.query.filter_by(user_id=current_user.id)
+        .order_by(FollowUpTemplate.name.asc())
+        .all()
     )
 
     follow_up_form = QuoteFollowUpForm()
-    follow_up_form.status.data = quote.status
-    follow_up_form.next_follow_up_date.data = quote.next_follow_up_date
+    follow_up_form.template_id.choices = build_template_choices(templates)
+
+    if request.method == "GET":
+        follow_up_form.status.data = quote.status
+        follow_up_form.next_follow_up_date.data = quote.next_follow_up_date
 
     return render_template(
         "quotes/detail.html",
         quote=quote,
         follow_up_form=follow_up_form,
+        templates=templates,
     )
 
 
 @main.route("/quotes/<int:quote_id>/edit", methods=["GET", "POST"])
 @login_required
 def quote_edit(quote_id):
-    quote = (
-        Quote.query
-        .filter_by(id=quote_id, user_id=current_user.id)
-        .first_or_404()
-    )
+    quote = Quote.query.filter_by(id=quote_id, user_id=current_user.id).first_or_404()
 
     form = QuoteForm(obj=quote)
 
@@ -166,8 +191,14 @@ def quote_edit(quote_id):
         quote.next_follow_up_date = form.next_follow_up_date.data
         quote.notes = form.notes.data.strip() if form.notes.data else None
         quote.contact_method = form.contact_method.data
-        quote.customer_email = form.customer_email.data.strip().lower() if form.customer_email.data else None
-        quote.customer_phone = form.customer_phone.data.strip() if form.customer_phone.data else None
+        quote.customer_email = (
+            form.customer_email.data.strip().lower()
+            if form.customer_email.data
+            else None
+        )
+        quote.customer_phone = (
+            form.customer_phone.data.strip() if form.customer_phone.data else None
+        )
 
         db.session.commit()
         flash("Quote updated successfully.", "success")
@@ -179,11 +210,7 @@ def quote_edit(quote_id):
 @main.route("/quotes/<int:quote_id>/follow-up", methods=["POST"])
 @login_required
 def quote_follow_up(quote_id):
-    quote = (
-        Quote.query
-        .filter_by(id=quote_id, user_id=current_user.id)
-        .first_or_404()
-    )
+    quote = Quote.query.filter_by(id=quote_id, user_id=current_user.id).first_or_404()
 
     follow_up_form = QuoteFollowUpForm()
 
@@ -192,7 +219,11 @@ def quote_follow_up(quote_id):
         quote.next_follow_up_date = follow_up_form.next_follow_up_date.data
         quote.last_followed_up_at = utc_now()
 
-        note_text = follow_up_form.follow_up_note.data.strip() if follow_up_form.follow_up_note.data else ""
+        note_text = (
+            follow_up_form.follow_up_note.data.strip()
+            if follow_up_form.follow_up_note.data
+            else ""
+        )
         if note_text:
             timestamp = utc_now().strftime("%Y-%m-%d %H:%M UTC")
             new_note_entry = f"[{timestamp}] Follow-up: {note_text}"
@@ -214,8 +245,7 @@ def quote_follow_up(quote_id):
 @login_required
 def template_list():
     templates = (
-        FollowUpTemplate.query
-        .filter_by(user_id=current_user.id)
+        FollowUpTemplate.query.filter_by(user_id=current_user.id)
         .order_by(FollowUpTemplate.name.asc())
         .all()
     )
@@ -247,11 +277,9 @@ def template_create():
 @main.route("/templates/<int:template_id>/edit", methods=["GET", "POST"])
 @login_required
 def template_edit(template_id):
-    template = (
-        FollowUpTemplate.query
-        .filter_by(id=template_id, user_id=current_user.id)
-        .first_or_404()
-    )
+    template = FollowUpTemplate.query.filter_by(
+        id=template_id, user_id=current_user.id
+    ).first_or_404()
 
     form = FollowUpTemplateForm(obj=template)
 

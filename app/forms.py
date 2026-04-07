@@ -1,15 +1,35 @@
 from flask_wtf import FlaskForm
-from wtforms import DateField, DecimalField, PasswordField, SelectField, StringField, SubmitField, TextAreaField
-from wtforms.validators import DataRequired, Email, EqualTo, Length, NumberRange, Optional
+from wtforms import (
+    DateField,
+    DecimalField,
+    PasswordField,
+    SelectField,
+    StringField,
+    SubmitField,
+    TextAreaField,
+)
+from wtforms.validators import (
+    DataRequired,
+    Email,
+    EqualTo,
+    Length,
+    NumberRange,
+    Optional,
+)
 
 
 class RegistrationForm(FlaskForm):
     name = StringField("Name", validators=[DataRequired(), Length(max=120)])
     email = StringField("Email", validators=[DataRequired(), Email(), Length(max=255)])
-    password = PasswordField("Password", validators=[DataRequired(), Length(min=8, max=255)])
+    password = PasswordField(
+        "Password", validators=[DataRequired(), Length(min=8, max=255)]
+    )
     confirm_password = PasswordField(
         "Confirm Password",
-        validators=[DataRequired(), EqualTo("password", message="Passwords must match")],
+        validators=[
+            DataRequired(),
+            EqualTo("password", message="Passwords must match"),
+        ],
     )
     submit = SubmitField("Create account")
 
@@ -21,7 +41,9 @@ class LoginForm(FlaskForm):
 
 
 class QuoteForm(FlaskForm):
-    customer_name = StringField("Customer name", validators=[DataRequired(), Length(max=120)])
+    customer_name = StringField(
+        "Customer name", validators=[DataRequired(), Length(max=120)]
+    )
     job_description = TextAreaField("Job description", validators=[DataRequired()])
     quote_amount = DecimalField(
         "Quote amount",
@@ -41,7 +63,9 @@ class QuoteForm(FlaskForm):
             ("no_response", "No response"),
         ],
     )
-    next_follow_up_date = DateField("Next follow-up date", validators=[Optional()], format="%Y-%m-%d")
+    next_follow_up_date = DateField(
+        "Next follow-up date", validators=[Optional()], format="%Y-%m-%d"
+    )
     notes = TextAreaField("Notes", validators=[Optional()])
     contact_method = SelectField(
         "Contact method",
@@ -54,12 +78,21 @@ class QuoteForm(FlaskForm):
             ("other", "Other"),
         ],
     )
-    customer_email = StringField("Customer email", validators=[Optional(), Email(), Length(max=255)])
-    customer_phone = StringField("Customer phone", validators=[Optional(), Length(max=50)])
+    customer_email = StringField(
+        "Customer email", validators=[Optional(), Email(), Length(max=255)]
+    )
+    customer_phone = StringField(
+        "Customer phone", validators=[Optional(), Length(max=50)]
+    )
     submit = SubmitField("Save quote")
 
 
 class QuoteFollowUpForm(FlaskForm):
+    template_id = SelectField(
+        "Use template",
+        validators=[Optional()],
+        choices=[],
+    )
     status = SelectField(
         "Status",
         validators=[DataRequired()],
@@ -71,9 +104,14 @@ class QuoteFollowUpForm(FlaskForm):
             ("no_response", "No response"),
         ],
     )
-    next_follow_up_date = DateField("Next follow-up date", validators=[Optional()], format="%Y-%m-%d")
-    follow_up_note = TextAreaField("Follow-up note", validators=[Optional(), Length(max=2000)])
+    next_follow_up_date = DateField(
+        "Next follow-up date", validators=[Optional()], format="%Y-%m-%d"
+    )
+    follow_up_note = TextAreaField(
+        "Follow-up note", validators=[Optional(), Length(max=2000)]
+    )
     submit = SubmitField("Save follow-up")
+
 
 class FollowUpTemplateForm(FlaskForm):
     name = StringField("Template name", validators=[DataRequired(), Length(max=120)])

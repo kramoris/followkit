@@ -17,8 +17,12 @@ class User(UserMixin, db.Model):
     password_hash = db.Column(db.String(255), nullable=False)
     created_at = db.Column(db.DateTime(timezone=True), default=utc_now, nullable=False)
 
-    quotes = db.relationship("Quote", backref="user", lazy=True, cascade="all, delete-orphan")
-    templates = db.relationship("FollowUpTemplate", backref="user", lazy=True, cascade="all, delete-orphan")
+    quotes = db.relationship(
+        "Quote", backref="user", lazy=True, cascade="all, delete-orphan"
+    )
+    templates = db.relationship(
+        "FollowUpTemplate", backref="user", lazy=True, cascade="all, delete-orphan"
+    )
 
     def set_password(self, password: str) -> None:
         self.password_hash = generate_password_hash(password)
@@ -62,7 +66,9 @@ class Quote(db.Model):
     ]
 
     id = db.Column(db.Integer, primary_key=True)
-    user_id = db.Column(db.Integer, db.ForeignKey("user.id"), nullable=False, index=True)
+    user_id = db.Column(
+        db.Integer, db.ForeignKey("user.id"), nullable=False, index=True
+    )
 
     customer_name = db.Column(db.String(120), nullable=False)
     job_description = db.Column(db.Text, nullable=False)
@@ -93,7 +99,9 @@ class Quote(db.Model):
 
 class FollowUpTemplate(db.Model):
     id = db.Column(db.Integer, primary_key=True)
-    user_id = db.Column(db.Integer, db.ForeignKey("user.id"), nullable=False, index=True)
+    user_id = db.Column(
+        db.Integer, db.ForeignKey("user.id"), nullable=False, index=True
+    )
 
     name = db.Column(db.String(120), nullable=False)
     subject = db.Column(db.String(255), nullable=True)

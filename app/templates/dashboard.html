@@ -11,7 +11,7 @@
 </div>
 
 <div class="row g-3 mb-4">
-  <div class="col-md-6 col-xl-3">
+  <div class="col-md-6 col-xl-2">
     <div class="card h-100">
       <div class="card-body">
         <div class="text-muted small mb-1">Follow-ups due today</div>
@@ -20,7 +20,7 @@
     </div>
   </div>
 
-  <div class="col-md-6 col-xl-3">
+  <div class="col-md-6 col-xl-2">
     <div class="card h-100">
       <div class="card-body">
         <div class="text-muted small mb-1">Overdue follow-ups</div>
@@ -29,7 +29,7 @@
     </div>
   </div>
 
-  <div class="col-md-6 col-xl-3">
+  <div class="col-md-6 col-xl-2">
     <div class="card h-100">
       <div class="card-body">
         <div class="text-muted small mb-1">Total quotes</div>
@@ -38,7 +38,36 @@
     </div>
   </div>
 
-  <div class="col-md-6 col-xl-3">
+  <div class="col-md-6 col-xl-2">
+    <div class="card h-100">
+      <div class="card-body">
+        <div class="text-muted small mb-1">Won</div>
+        <div class="fs-3 fw-semibold">{{ total_won }}</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="col-md-6 col-xl-2">
+    <div class="card h-100">
+      <div class="card-body">
+        <div class="text-muted small mb-1">Lost</div>
+        <div class="fs-3 fw-semibold">{{ total_lost }}</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="col-md-6 col-xl-2">
+    <div class="card h-100">
+      <div class="card-body">
+        <div class="text-muted small mb-1">Win rate</div>
+        <div class="fs-3 fw-semibold">{{ win_rate }}%</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="row g-3 mb-4">
+  <div class="col-md-6">
     <div class="card h-100">
       <div class="card-body">
         <div class="text-muted small mb-1">Open quote value</div>
