@@ -1,9 +1,13 @@
-from datetime import datetime
+from datetime import UTC, datetime
 
 from flask_login import UserMixin
-from werkzeug.security import generate_password_hash, check_password_hash
+from werkzeug.security import check_password_hash, generate_password_hash
 
 from app import db
+
+
+def utc_now():
+    return datetime.now(UTC)
 
 
 class User(UserMixin, db.Model):
@@ -11,7 +15,7 @@ class User(UserMixin, db.Model):
     name = db.Column(db.String(120), nullable=False)
     email = db.Column(db.String(255), unique=True, nullable=False, index=True)
     password_hash = db.Column(db.String(255), nullable=False)
-    created_at = db.Column(db.DateTime, default=datetime.utcnow, nullable=False)
+    created_at = db.Column(db.DateTime(timezone=True), default=utc_now, nullable=False)
 
     quotes = db.relationship("Quote", backref="user", lazy=True, cascade="all, delete-orphan")
     templates = db.relationship("FollowUpTemplate", backref="user", lazy=True, cascade="all, delete-orphan")
@@ -73,13 +77,13 @@ class Quote(db.Model):
     customer_email = db.Column(db.String(255), nullable=True)
     customer_phone = db.Column(db.String(50), nullable=True)
 
-    last_followed_up_at = db.Column(db.DateTime, nullable=True)
+    last_followed_up_at = db.Column(db.DateTime(timezone=True), nullable=True)
 
-    created_at = db.Column(db.DateTime, default=datetime.utcnow, nullable=False)
+    created_at = db.Column(db.DateTime(timezone=True), default=utc_now, nullable=False)
     updated_at = db.Column(
-        db.DateTime,
-        default=datetime.utcnow,
-        onupdate=datetime.utcnow,
+        db.DateTime(timezone=True),
+        default=utc_now,
+        onupdate=utc_now,
         nullable=False,
     )
 
@@ -95,11 +99,11 @@ class FollowUpTemplate(db.Model):
     subject = db.Column(db.String(255), nullable=True)
     body = db.Column(db.Text, nullable=False)
 
-    created_at = db.Column(db.DateTime, default=datetime.utcnow, nullable=False)
+    created_at = db.Column(db.DateTime(timezone=True), default=utc_now, nullable=False)
     updated_at = db.Column(
-        db.DateTime,
-        default=datetime.utcnow,
-        onupdate=datetime.utcnow,
+        db.DateTime(timezone=True),
+        default=utc_now,
+        onupdate=utc_now,
         nullable=False,
     )
 

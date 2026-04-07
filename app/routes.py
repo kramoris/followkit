@@ -1,6 +1,6 @@
-from datetime import date, datetime
+from datetime import UTC, date, datetime
 
-from flask import Blueprint, redirect, render_template, url_for, flash
+from flask import Blueprint, flash, redirect, render_template, url_for
 from flask_login import current_user, login_required
 
 from app import db
@@ -8,6 +8,10 @@ from app.forms import QuoteForm, QuoteFollowUpForm
 from app.models import Quote
 
 main = Blueprint("main", __name__)
+
+
+def utc_now():
+    return datetime.now(UTC)
 
 
 @main.route("/")
@@ -186,11 +190,11 @@ def quote_follow_up(quote_id):
     if follow_up_form.validate_on_submit():
         quote.status = follow_up_form.status.data
         quote.next_follow_up_date = follow_up_form.next_follow_up_date.data
-        quote.last_followed_up_at = datetime.utcnow()
+        quote.last_followed_up_at = utc_now()
 
         note_text = follow_up_form.follow_up_note.data.strip() if follow_up_form.follow_up_note.data else ""
         if note_text:
-            timestamp = datetime.utcnow().strftime("%Y-%m-%d %H:%M UTC")
+            timestamp = utc_now().strftime("%Y-%m-%d %H:%M UTC")
             new_note_entry = f"[{timestamp}] Follow-up: {note_text}"
 
             if quote.notes:
