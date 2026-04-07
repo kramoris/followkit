@@ -23,6 +23,7 @@ block content %}
             <th>Amount</th>
             <th>Date sent</th>
             <th>Next follow-up</th>
+            <th></th>
           </tr>
         </thead>
         <tbody>
@@ -44,6 +45,13 @@ block content %}
             <td>{{ quote.quote_amount }}</td>
             <td>{{ quote.date_sent or "-" }}</td>
             <td>{{ quote.next_follow_up_date or "-" }}</td>
+            <td class="text-end">
+              <a
+                href="{{ url_for('main.quote_edit', quote_id=quote.id) }}"
+                class="btn btn-outline-secondary btn-sm"
+                >Edit</a
+              >
+            </td>
           </tr>
           {% endfor %}
         </tbody>

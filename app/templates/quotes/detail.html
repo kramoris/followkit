@@ -5,9 +5,16 @@ FollowKit{% endblock %} {% block content %}
     <h1 class="h3 mb-1">{{ quote.customer_name }}</h1>
     <p class="text-muted mb-0">{{ quote.job_description }}</p>
   </div>
-  <a href="{{ url_for('main.quote_list') }}" class="btn btn-outline-secondary"
-    >Back to quotes</a
-  >
+  <div class="d-flex gap-2">
+    <a
+      href="{{ url_for('main.quote_edit', quote_id=quote.id) }}"
+      class="btn btn-primary"
+      >Edit quote</a
+    >
+    <a href="{{ url_for('main.quote_list') }}" class="btn btn-outline-secondary"
+      >Back to quotes</a
+    >
+  </div>
 </div>
 
 <div class="row g-4">

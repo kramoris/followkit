@@ -1,4 +1,4 @@
-from datetime import date
+from datetime import date, datetime
 
 from flask import Blueprint, redirect, render_template, url_for, flash
 from flask_login import current_user, login_required
@@ -142,6 +142,36 @@ def quote_detail(quote_id):
     )
 
 
+@main.route("/quotes/<int:quote_id>/edit", methods=["GET", "POST"])
+@login_required
+def quote_edit(quote_id):
+    quote = (
+        Quote.query
+        .filter_by(id=quote_id, user_id=current_user.id)
+        .first_or_404()
+    )
+
+    form = QuoteForm(obj=quote)
+
+    if form.validate_on_submit():
+        quote.customer_name = form.customer_name.data.strip()
+        quote.job_description = form.job_description.data.strip()
+        quote.quote_amount = form.quote_amount.data
+        quote.date_sent = form.date_sent.data
+        quote.status = form.status.data
+        quote.next_follow_up_date = form.next_follow_up_date.data
+        quote.notes = form.notes.data.strip() if form.notes.data else None
+        quote.contact_method = form.contact_method.data
+        quote.customer_email = form.customer_email.data.strip().lower() if form.customer_email.data else None
+        quote.customer_phone = form.customer_phone.data.strip() if form.customer_phone.data else None
+
+        db.session.commit()
+        flash("Quote updated successfully.", "success")
+        return redirect(url_for("main.quote_detail", quote_id=quote.id))
+
+    return render_template("quotes/edit.html", form=form, quote=quote)
+
+
 @main.route("/quotes/<int:quote_id>/follow-up", methods=["POST"])
 @login_required
 def quote_follow_up(quote_id):
@@ -154,8 +184,6 @@ def quote_follow_up(quote_id):
     follow_up_form = QuoteFollowUpForm()
 
     if follow_up_form.validate_on_submit():
-        from datetime import datetime
-
         quote.status = follow_up_form.status.data
         quote.next_follow_up_date = follow_up_form.next_follow_up_date.data
         quote.last_followed_up_at = datetime.utcnow()
