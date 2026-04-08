@@ -76,13 +76,3 @@ flask --app run.py run
 ```
 
 Open `http://127.0.0.1:5000` in your browser.
-
-## Notes
-
-- Do not commit `.env`
-- Do not commit the local SQLite database
-- Use Flask-Migrate for schema changes
-
-## License
-
-MIT
