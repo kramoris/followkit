@@ -1,6 +1,6 @@
-from datetime import UTC, date, datetime
+from datetime import UTC, datetime
 
-from flask import Blueprint, flash, redirect, render_template, request, url_for
+from flask import Blueprint, flash, redirect, render_template, url_for
 from flask_login import current_user, login_required
 
 from app import db
@@ -36,7 +36,7 @@ def dashboard():
         .all()
     )
 
-    today = date.today()
+    today = utc_now().date()
 
     active_follow_up_statuses = {
         Quote.STATUS_SENT,
@@ -149,7 +149,7 @@ def quote_create():
     return render_template("quotes/create.html", form=form)
 
 
-@main.route("/quotes/<int:quote_id>", methods=["GET", "POST"])
+@main.route("/quotes/<int:quote_id>")
 @login_required
 def quote_detail(quote_id):
     quote = Quote.query.filter_by(id=quote_id, user_id=current_user.id).first_or_404()
@@ -163,9 +163,11 @@ def quote_detail(quote_id):
     follow_up_form = QuoteFollowUpForm()
     follow_up_form.template_id.choices = build_template_choices(templates)
 
-    if request.method == "GET":
-        follow_up_form.status.data = quote.status
-        follow_up_form.next_follow_up_date.data = quote.next_follow_up_date
+    allowed_status_values = {value for value, _label in follow_up_form.status.choices}
+    follow_up_form.status.data = (
+        quote.status if quote.status in allowed_status_values else Quote.STATUS_SENT
+    )
+    follow_up_form.next_follow_up_date.data = quote.next_follow_up_date
 
     return render_template(
         "quotes/detail.html",
@@ -231,6 +233,7 @@ def quote_follow_up(quote_id):
             if follow_up_form.follow_up_note.data
             else ""
         )
+
         if note_text:
             timestamp = utc_now().strftime("%Y-%m-%d %H:%M UTC")
             new_note_entry = f"[{timestamp}] Follow-up: {note_text}"
@@ -242,10 +245,18 @@ def quote_follow_up(quote_id):
 
         db.session.commit()
         flash("Follow-up saved.", "success")
-    else:
-        flash(f"Form errors: {follow_up_form.errors}", "danger")  # keep this for now
+        return redirect(url_for("main.quote_detail", quote_id=quote.id))
 
-    return redirect(url_for("main.quote_detail", quote_id=quote.id))
+    flash("Please correct the errors in the follow-up form.", "danger")
+    return (
+        render_template(
+            "quotes/detail.html",
+            quote=quote,
+            follow_up_form=follow_up_form,
+            templates=templates,
+        ),
+        400,
+    )
 
 
 @main.route("/templates")

@@ -109,7 +109,7 @@ class QuoteFollowUpForm(FlaskForm):
         "Next follow-up date", validators=[Optional()], format="%Y-%m-%d"
     )
     follow_up_note = TextAreaField(
-        "Follow-up note", validators=[Optional(), Length(max=2000)]
+        "Follow-up note", validators=[Optional(), Length(max=6000)]
     )
     submit = SubmitField("Save follow-up")
 
