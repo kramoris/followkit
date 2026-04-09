@@ -34,14 +34,14 @@ cd followkit
 
 ### 2. Create and activate a virtual environment
 
-**Linux / macOS**
+#### Linux / macOS
 
 ```bash
 python3 -m venv .venv
 source .venv/bin/activate
 ```
 
-**Windows PowerShell**
+#### Windows PowerShell
 
 ```powershell
 python -m venv .venv
@@ -54,14 +54,26 @@ python -m venv .venv
 pip install -r requirements.txt
 ```
 
-### 4. Create a local `.env` file
+### 4. Create your local `.env` file
 
-```env
-SECRET_KEY=dev-secret-key
-DATABASE_URL=sqlite:///app.db
-FLASK_ENV=development
-FLASK_DEBUG=1
+Copy the example environment file:
+
+#### Linux / macOS
+
+```bash
+cp .env.example .env
 ```
+
+#### Windows PowerShell
+
+```powershell
+Copy-Item .env.example .env
+```
+
+Then edit `.env` if needed.
+
+The values in `.env.example` are for local development.  
+Use a strong unique `SECRET_KEY` in production.
 
 ### 5. Set up the database
 
@@ -72,7 +84,7 @@ flask --app run.py db upgrade
 ### 6. Run the app
 
 ```bash
-flask --app run.py run
+flask --app run.py
 ```
 
 Open `http://127.0.0.1:5000` in your browser.
