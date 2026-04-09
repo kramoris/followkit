@@ -84,7 +84,7 @@ flask --app run.py db upgrade
 ### 6. Run the app
 
 ```bash
-flask --app run.py
+flask --app run.py run
 ```
 
 Open `http://127.0.0.1:5000` in your browser.
