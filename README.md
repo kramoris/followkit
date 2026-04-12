@@ -28,7 +28,7 @@ FollowKit helps home service businesses track quotes and keep follow-ups organiz
 ### 1. Clone the repository
 
 ```bash
-git clone <your-repo-url>
+git clone https://github.com/kramoris/followkit.git
 cd followkit
 ```
 
